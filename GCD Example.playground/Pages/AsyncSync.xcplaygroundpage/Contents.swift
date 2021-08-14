@@ -32,24 +32,28 @@ func task4() {
     print("Task 4 Finished")
 }
 
-//timeCheck {
-//
-//    queue.async {  // another thread
-//        task1()
-//    }
-//
-//    queue.async {  // another thread
-//        task2()
-//    }
-//
-//    queue.async {  // another thread
-//        task3()
-//    }
-//    queue.async {  // another thread
-//        task4()
-//    }
-//
-//}
+timeCheck {
+
+    queue.async {  // another thread
+        print(Thread.isMainThread, Thread.current)
+        task1()
+    }
+
+    queue.async {  // another thread
+        print(Thread.isMainThread, Thread.current)
+        task2()
+    }
+
+    queue.async {  // another thread
+        print(Thread.isMainThread, Thread.current)
+        task3()
+    }
+    queue.async {  // another thread
+        print(Thread.isMainThread, Thread.current)
+        task4()
+    }
+
+}
 
 //task1()  // thread 1
 //task2()  // thread 1
@@ -57,18 +61,22 @@ func task4() {
 //task4()  // thread 1
 
 timeCheck {
-    queue.sync {  // another thread
+    queue.sync {  // another thread, but the same thread
+        print(Thread.isMainThread, Thread.current)
         task1()
     }
     
-    queue.sync {  // another thread
+    queue.sync {  // another thread, but the same thread
+        print(Thread.isMainThread, Thread.current)
         task2()
     }
     
-    queue.sync {  // another thread
+    queue.sync {  // another thread, but the same thread
+        print(Thread.isMainThread, Thread.current)
         task3()
     }
-    queue.sync {  // another thread
+    queue.sync {  // another thread, but the same thread
+        print(Thread.isMainThread, Thread.current)
         task4()
     }
 }
