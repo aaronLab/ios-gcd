@@ -24,10 +24,11 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        changeNames()
+        threadSafeChangeNames()
     }
     
-    private func changeNames() {
+    /// Thread Safe
+    private func threadSafeChangeNames() {
         print("Initial Name: \(threadSafePerson.name)")
         print("==================================================")
         
