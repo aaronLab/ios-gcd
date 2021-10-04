@@ -2,15 +2,21 @@ import Foundation
 
 class SharedClass {
     lazy var lazyTest = {
-        return Int.random(in: 0..<99)
+        return Int.random(in: 0..<100)
     }()
+}
+
+class SharedClass2 {
+    lazy var lazyTest = {
+        return Int.random(in: 0..<100)
+    }
 }
 
 class SyncSharedClass {
     let queue = DispatchQueue(label: "serial")
     
     lazy var lazyTest = {
-        return Int.random(in: 0..<99)
+        return Int.random(in: 0..<100)
     }()
     
     var readVar: Int {
@@ -60,3 +66,21 @@ group.notify(queue: DispatchQueue.global()) {
 queue.activate()
 group.wait()
 
+// MARK: - Barrier
+
+let instance3 = SharedClass2()
+
+for i in 0..<10 {
+    group.enter()
+    queue.async(group: group, qos: .utility, flags: .barrier) {
+        print("id 3: \(i), var: \(instance.lazyTest)")
+        group.leave()
+    }
+}
+
+group.notify(queue: DispatchQueue.global()) {
+    print("Done")
+}
+
+queue.activate()
+group.wait()
