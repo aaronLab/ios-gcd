@@ -2,13 +2,19 @@ import Foundation
 
 class SharedClass {
     lazy var lazyTest = {
-        return Int.random(in: 0..<100)
+        return Int.random(in: 0 ..< 100)
     }()
 }
 
 class SharedClass2 {
     lazy var lazyTest = {
-        return Int.random(in: 0..<100)
+        return Int.random(in: 0 ..< 100)
+    }
+}
+
+class SharedClass3 {
+    lazy var lazyTest = {
+        return Int.random(in: 0 ..< 100)
     }
 }
 
@@ -16,7 +22,7 @@ class SyncSharedClass {
     let queue = DispatchQueue(label: "serial")
     
     lazy var lazyTest = {
-        return Int.random(in: 0..<100)
+        return Int.random(in: 0 ..< 100)
     }()
     
     var readVar: Int {
@@ -32,7 +38,7 @@ let instance = SharedClass()
 
 // MARK: - Unsafe
 
-for i in 0..<10 {
+for i in 0 ..< 10 {
     group.enter()
     queue.async(group: group) {
         print("id 1: \(i), var: \(instance.lazyTest)")
@@ -42,6 +48,7 @@ for i in 0..<10 {
 
 group.notify(queue: DispatchQueue.global()) {
     print("Done")
+    print("==========")
 }
 
 queue.activate()
@@ -51,7 +58,7 @@ group.wait()
 
 let instance2 = SyncSharedClass()
 
-for i in 0..<10 {
+for i in 0 ..< 10 {
     group.enter()
     queue.async(group: group) {
         print("id 2: \(i), var: \(instance2.readVar)")
@@ -60,17 +67,17 @@ for i in 0..<10 {
 }
 
 group.notify(queue: DispatchQueue.global()) {
-    print("Done")
+    print("Sync Done")
+    print("==========")
 }
 
-queue.activate()
 group.wait()
 
 // MARK: - Barrier
 
 let instance3 = SharedClass2()
 
-for i in 0..<10 {
+for i in 0 ..< 10 {
     group.enter()
     queue.async(group: group, qos: .utility, flags: .barrier) {
         print("id 3: \(i), var: \(instance.lazyTest)")
@@ -79,8 +86,30 @@ for i in 0..<10 {
 }
 
 group.notify(queue: DispatchQueue.global()) {
-    print("Done")
+    print("Barrier Done")
+    print("==========")
 }
 
-queue.activate()
+group.wait()
+
+// MARK: - Semaphore
+
+let instance4 = SharedClass3()
+let semaphore = DispatchSemaphore(value: 1)
+
+for i in 0 ..< 10 {
+    group.enter()
+    semaphore.wait()
+    queue.async(group: group, qos: .utility, flags: .barrier) {
+        print("id 4: \(i), var: \(instance.lazyTest)")
+        group.leave()
+        semaphore.signal()
+    }
+}
+
+group.notify(queue: DispatchQueue.global()) {
+    print("Semaphore Done")
+    print("==========")
+}
+
 group.wait()
