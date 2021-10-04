@@ -6,25 +6,6 @@ class SharedClass {
     }()
 }
 
-let queue = DispatchQueue(label: "queue", attributes: [.initiallyInactive, .concurrent])
-let group = DispatchGroup()
-let instance = SharedClass()
-
-//for i in 0..<10 {
-//    group.enter()
-//    queue.async(group: group) {
-//        print("id: \(i), var: \(instance.lazyTest)")
-//        group.leave()
-//    }
-//}
-//
-//group.notify(queue: DispatchQueue.global()) {
-//    print("Done")
-//}
-//
-//queue.activate()
-//group.wait()
-
 class SyncSharedClass {
     let queue = DispatchQueue(label: "serial")
     
@@ -39,12 +20,35 @@ class SyncSharedClass {
     }
 }
 
+let queue = DispatchQueue(label: "queue", attributes: [.initiallyInactive, .concurrent])
+let group = DispatchGroup()
+let instance = SharedClass()
+
+// MARK: - Unsafe
+
+for i in 0..<10 {
+    group.enter()
+    queue.async(group: group) {
+        print("id 1: \(i), var: \(instance.lazyTest)")
+        group.leave()
+    }
+}
+
+group.notify(queue: DispatchQueue.global()) {
+    print("Done")
+}
+
+queue.activate()
+group.wait()
+
+// MARK: - Thread Safe (Sync)
+
 let instance2 = SyncSharedClass()
 
 for i in 0..<10 {
     group.enter()
     queue.async(group: group) {
-        print("id: \(i), var: \(instance2.readVar)")
+        print("id 2: \(i), var: \(instance2.readVar)")
         group.leave()
     }
 }
