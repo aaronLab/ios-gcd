@@ -31,6 +31,8 @@ import UIKit
 final class PhotoCell: UICollectionViewCell {
   @IBOutlet private weak var imageView: UIImageView!
   
+  var downloadTask: URLSessionDataTask?
+  
   override func awakeFromNib() {
     super.awakeFromNib()
     imageView.backgroundColor = .gray
@@ -39,6 +41,7 @@ final class PhotoCell: UICollectionViewCell {
   override func prepareForReuse() {
     super.prepareForReuse()
     imageView.image = nil
+    downloadTask?.cancel()
   }
 
   func display(image: UIImage?) {

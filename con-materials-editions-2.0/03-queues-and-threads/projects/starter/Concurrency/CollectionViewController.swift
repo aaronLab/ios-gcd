@@ -35,9 +35,7 @@ final class CollectionViewController: UICollectionViewController {
   private var cellSize: CGFloat?
   private var urls: [URL] = []
   
-  private var downloadQueue = DispatchQueue(label: "kr.witi.test",
-                                            qos: .utility,
-                                            attributes: .concurrent)
+  private var downloadedImages: [IndexPath: UIImage] = [:]
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -63,39 +61,30 @@ extension CollectionViewController {
   override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "normal", for: indexPath) as! PhotoCell
     
-    downloadQueue.async { [weak self] in
-      guard let self = self else { return }
+    if let downloadedImage = downloadedImages[indexPath] {
+      cell.display(image: downloadedImage)
+      return cell
+    }
+    
+    cell.downloadTask = URLSession.shared.dataTask(with: urls[indexPath.item]) {
+        [weak self] data, response, error in
+
+        guard let self = self,
+              let data = data,
+              let image = UIImage(data: data) else {
+          return
+        }
       
-      if let data = try? Data(contentsOf: self.urls[indexPath.item]),
-        let image = UIImage(data: data) {
+      self.downloadedImages[indexPath] = image
+      
         DispatchQueue.main.async {
           cell.display(image: image)
         }
-        
-      } else {
-        DispatchQueue.main.async {
-          cell.display(image: nil)
-        }
-        
       }
-    }
+    
+    cell.downloadTask?.resume()
 
     return cell
-  }
-  
-  private func downloadWithGlobalQueue(at indexPath: IndexPath) {
-    downloadQueue.async { [weak self] in
-      guard let self = self else { return }
-      
-      guard let data = try? Data(contentsOf: self.urls[indexPath.item]),
-            let image = UIImage(data: data) else { return }
-      
-      DispatchQueue.main.async {
-        if let cell = self.collectionView.cellForItem(at: indexPath) as? PhotoCell {
-          cell.display(image: image)
-        }
-      }
-    }
   }
   
 }
