@@ -31,23 +31,21 @@ import UIKit
 final class CollectionViewController: UICollectionViewController {
   private let cellSpacing: CGFloat = 1
   private let columns: CGFloat = 3
-
+  
   private var cellSize: CGFloat?
   private var urls: [URL] = []
   
-  private var downloadedImages: [IndexPath: UIImage] = [:]
-
   override func viewDidLoad() {
     super.viewDidLoad()
-
+    
     guard let plist = Bundle.main.url(forResource: "Photos", withExtension: "plist"),
           let contents = try? Data(contentsOf: plist),
           let serial = try? PropertyListSerialization.propertyList(from: contents, format: nil),
           let serialUrls = serial as? [String] else {
-      print("Something went horribly wrong!")
-      return
-    }
-
+            print("Something went horribly wrong!")
+            return
+          }
+    
     urls = serialUrls.compactMap { URL(string: $0) }
   }
 }
@@ -57,34 +55,54 @@ extension CollectionViewController {
   override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
     return self.urls.count
   }
-
+  
   override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "normal", for: indexPath) as! PhotoCell
     
-    if let downloadedImage = downloadedImages[indexPath] {
-      cell.display(image: downloadedImage)
-      return cell
-    }
+    // downloadWithGlobalQueue(at: indexPath)
+    downloadWithUrlSession(at: indexPath)
     
-    cell.downloadTask = URLSession.shared.dataTask(with: urls[indexPath.item]) {
-        [weak self] data, response, error in
-
-        guard let self = self,
-              let data = data,
-              let image = UIImage(data: data) else {
-          return
-        }
-      
-      self.downloadedImages[indexPath] = image
-      
-        DispatchQueue.main.async {
-          cell.display(image: image)
-        }
-      }
-    
-    cell.downloadTask?.resume()
-
     return cell
+  }
+  
+  /// Fetch image in the utility queue, and then display it
+  private func downloadWithGlobalQueue(at indexPath: IndexPath) {
+    DispatchQueue.global(qos: .utility).async { [weak self] in
+      guard let self = self else { return }
+      let url = self.urls[indexPath.item]
+      
+      guard let data = try? Data(contentsOf: url),
+            let image = UIImage(data: data) else {
+              return
+            }
+      
+      
+      
+      DispatchQueue.main.async {
+        guard let cell = self.collectionView.cellForItem(at: indexPath) as? PhotoCell else { return }
+        cell.display(image: image)
+      }
+      
+    }
+  }
+  
+  /// Fetch image with URLSession, and then display it
+  private func downloadWithUrlSession(at indexPath: IndexPath) {
+    URLSession.shared.dataTask(with: urls[indexPath.item]) { [weak self] data, response, error in
+      
+      guard let self = self,
+            let data = data,
+            let image = UIImage(data: data) else {
+              return
+            }
+      
+      DispatchQueue.main.async {
+        guard let cell = self.collectionView.cellForItem(at: indexPath) as? PhotoCell else { return }
+        
+        cell.display(image: image)
+      }
+      
+    }.resume()
   }
   
 }
@@ -97,14 +115,14 @@ extension CollectionViewController: UICollectionViewDelegateFlowLayout {
       let emptySpace = layout.sectionInset.left + layout.sectionInset.right + (columns * cellSpacing - 1)
       cellSize = (view.frame.size.width - emptySpace) / columns
     }
-
+    
     return CGSize(width: cellSize!, height: cellSize!)
   }
-
+  
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
     return cellSpacing
   }
-
+  
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
     return cellSpacing
   }
