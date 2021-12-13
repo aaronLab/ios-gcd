@@ -28,3 +28,21 @@
 
 import Foundation
 
+let sentence = "Ray's courses are the best!"
+let wordOperation = BlockOperation() // This will be concurrent global default queue
+
+for word in sentence.split(separator: " ") {
+    wordOperation.addExecutionBlock {
+        print(word)
+        sleep(2)
+    }
+}
+
+// will be executed once all of the closures added to the block operation have finished.
+wordOperation.completionBlock = {
+    print("Thank you for your patronage!")
+}
+
+duration {
+    wordOperation.start()
+}
