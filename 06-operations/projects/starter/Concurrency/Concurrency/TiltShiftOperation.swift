@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,40 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Foundation
 import UIKit
 
-class TiltShiftTableViewController: UITableViewController {
-  private let context = CIContext()
-
-  override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return 10
+final class TiltShiftOperation: Operation {
+  var outputImage: UIImage?
+  
+  private let inputImage: UIImage
+  private let radius: Double
+  
+  /// CIContext is thread-safe. So you can make it static.
+  private static let context = CIContext()
+  
+  init(image: UIImage, radius: Double = 3.0) {
+    inputImage = image
+    self.radius = radius
+    super.init()
   }
-
-  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "normal", for: indexPath) as! PhotoCell
+  
+  override func main() {
+    guard let filter = TiltShiftFilter(image: inputImage, radius: radius),
+          let output = filter.outputImage else {
+            print("Failed to generate tilt shift image")
+            return
+          }
     
-    let name = "\(indexPath.row).png"
-    let inputImage = UIImage(named: name)!
+    let fromRect = CGRect(origin: .zero, size: inputImage.size)
+    guard let cgImage = TiltShiftOperation
+            .context
+            .createCGImage(output, from: fromRect) else {
+              print("No image generated")
+              return
+            }
     
-    print("Filtering")
-    
-    let operation = TiltShiftOperation(image: inputImage)
-    operation.start()
-    
-    cell.display(image: operation.outputImage)
-    
-    print("Done")
-
-
-    return cell
+    outputImage = UIImage(cgImage: cgImage)
   }
+  
 }

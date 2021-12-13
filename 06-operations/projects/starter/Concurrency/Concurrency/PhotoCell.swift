@@ -29,7 +29,7 @@
 import UIKit
 
 final class PhotoCell: UITableViewCell {
-  @IBOutlet private weak var theImageView: UIImageView!
+  @IBOutlet weak var theImageView: UIImageView!
 
   func display(image: UIImage?) {
     theImageView.image = image
