@@ -126,13 +126,19 @@
                                                 <constraint firstAttribute="width" constant="200" id="DLG-WG-dBs"/>
                                             </constraints>
                                         </imageView>
+                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="BGZ-QJ-pcR">
+                                            <rect key="frame" x="197" y="110" width="20" height="20"/>
+                                        </activityIndicatorView>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="MWU-yM-id8" firstAttribute="centerX" secondItem="zss-oW-rkG" secondAttribute="centerX" id="05e-kl-VdF"/>
+                                        <constraint firstItem="BGZ-QJ-pcR" firstAttribute="centerY" secondItem="MWU-yM-id8" secondAttribute="centerY" id="jNc-pd-3kR"/>
                                         <constraint firstItem="MWU-yM-id8" firstAttribute="top" secondItem="zss-oW-rkG" secondAttribute="top" constant="20" id="lCp-fc-c1v"/>
+                                        <constraint firstItem="BGZ-QJ-pcR" firstAttribute="centerX" secondItem="MWU-yM-id8" secondAttribute="centerX" id="tNe-PB-kQB"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
+                                    <outlet property="activityIndicator" destination="BGZ-QJ-pcR" id="gw0-l6-BPL"/>
                                     <outlet property="theImageView" destination="MWU-yM-id8" id="bqX-Dp-73H"/>
                                 </connections>
                             </tableViewCell>
