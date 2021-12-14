@@ -28,7 +28,7 @@
 
 import UIKit
 
-final class TiltShiftOperation: Operation {
+final class TiltShiftOperation: AsyncOperation {
   private static let context = CIContext()
 
   var outputImage: UIImage?
@@ -41,18 +41,21 @@ final class TiltShiftOperation: Operation {
   }
 
   override func main() {
-    guard let filter = TiltShiftFilter(image: inputImage, radius: 3),
+    guard let filter = TiltShiftFilter(image: inputImage, radius: 10),
       let output = filter.outputImage else {
         print("Failed to generate tilt shift image")
+        state = .finished
         return
     }
 
     let fromRect = CGRect(origin: .zero, size: inputImage.size)
     guard let cgImage = TiltShiftOperation.context.createCGImage(output, from: fromRect) else {
       print("No image generated")
+      state = .finished
       return
     }
 
     outputImage = UIImage(cgImage: cgImage)
+    state = .finished
   }
 }
