@@ -29,7 +29,6 @@
 import Foundation
 
 class AsyncOperation: Operation {
-  // Create state management
   enum State: String {
     case ready, executing, finished
 
@@ -49,7 +48,6 @@ class AsyncOperation: Operation {
     }
   }
 
-  // Override properties
   override var isReady: Bool {
     return super.isReady && state == .ready
   }
@@ -66,8 +64,12 @@ class AsyncOperation: Operation {
     return true
   }
 
-  // Override start
   override func start() {
+    if isCancelled {
+      state = .finished
+      return
+    }
+    
     main()
     state = .executing
   }

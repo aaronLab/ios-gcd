@@ -31,6 +31,7 @@ import UIKit
 class TiltShiftTableViewController: UITableViewController {
   private let queue = OperationQueue()
   private var urls: [URL] = []
+  private var operations: [IndexPath: [Operation]] = [:]
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -70,7 +71,21 @@ class TiltShiftTableViewController: UITableViewController {
 
     queue.addOperation(downloadOp)
     queue.addOperation(tiltShiftOp)
+    
+    if let existingOperations = operations[indexPath] {
+      existingOperations.forEach { $0.cancel() }
+    }
+    
+    operations[indexPath] = [tiltShiftOp, downloadOp]
 
     return cell
+  }
+  
+  override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    
+    if let operations = operations[indexPath] {
+      operations.forEach { $0.cancel() }
+    }
+    
   }
 }

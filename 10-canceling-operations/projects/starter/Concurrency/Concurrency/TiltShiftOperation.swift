@@ -45,6 +45,8 @@ final class TiltShiftOperation: Operation {
   }
 
   override func main() {
+    guard !isCancelled else { return }
+    
     var imageToProcess: UIImage
     
     if let inputImage = inputImage {
@@ -78,6 +80,8 @@ final class TiltShiftOperation: Operation {
       print("No image generated")
       return
     }
+    
+    guard !isCancelled else { return }
     
     outputImage = UIImage(cgImage: rendered)
     
