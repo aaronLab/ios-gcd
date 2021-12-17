@@ -32,6 +32,8 @@ final class TiltShiftOperation: Operation {
   private static let context = CIContext()
 
   var outputImage: UIImage?
+  
+  var onImageProcessed: ((UIImage?) -> Void)?
 
   private let inputImage: UIImage?
 
@@ -65,6 +67,12 @@ final class TiltShiftOperation: Operation {
     }
     
     outputImage = UIImage(cgImage: rendered)
+    
+    if let onImageProcessed = onImageProcessed {
+      DispatchQueue.main.async { [weak self] in
+        onImageProcessed(self?.outputImage)
+      }
+    }
   }
 }
 
